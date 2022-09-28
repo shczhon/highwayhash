@@ -32,13 +32,12 @@ namespace {
 // reduced to 64 bits via 8-byte SipHash.
 
 const int kNumLanes = 4;
-using Lanes = HH_U64[kNumLanes];
-const int kPacketSize = sizeof(Lanes);
+const int kPacketSize = sizeof(HH_U64[kNumLanes]);
 
 template <int kUpdateRounds, int kFinalizeRounds>
 class ScalarSipTreeHashState {
  public:
-  HH_INLINE ScalarSipTreeHashState(const Lanes& keys, const int lane) {
+  HH_INLINE ScalarSipTreeHashState(const HH_U64 (&keys)[4], const int lane) {
     const HH_U64 key = keys[lane] ^ (kNumLanes | lane);
     v0 = 0x736f6d6570736575ull ^ key;
     v1 = 0x646f72616e646f6dull ^ key;
@@ -105,7 +104,7 @@ class ScalarSipTreeHashState {
 }  // namespace
 
 template <size_t kUpdateRounds, size_t kFinalizeRounds>
-HH_U64 ScalarSipTreeHashT(const Lanes& key, const char* bytes,
+HH_U64 ScalarSipTreeHashT(const HH_U64 (&key)[4], const char* bytes,
                           const HH_U64 size) {
   // "j-lanes" tree hashing interleaves 8-byte input packets.
   using State = ScalarSipTreeHashState<kUpdateRounds, kFinalizeRounds>;
@@ -152,12 +151,12 @@ HH_U64 ScalarSipTreeHashT(const Lanes& key, const char* bytes,
       reduce_key, hashes);
 }
 
-HH_U64 ScalarSipTreeHash(const Lanes& key, const char* bytes,
+HH_U64 ScalarSipTreeHash(const HH_U64 (&key)[4], const char* bytes,
                          const HH_U64 size) {
   return ScalarSipTreeHashT<2, 4>(key, bytes, size);
 }
 
-HH_U64 ScalarSipTreeHash13(const Lanes& key, const char* bytes,
+HH_U64 ScalarSipTreeHash13(const HH_U64 (&key)[4], const char* bytes,
                            const HH_U64 size) {
   return ScalarSipTreeHashT<1, 3>(key, bytes, size);
 }
